@@ -22,7 +22,7 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
+      display: none; /* hidden by default, shown via JS on mobile */
       gap: 20px;
       z-index: 10;
     }
@@ -34,12 +34,6 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-    }
-
-    @media (min-width: 801px) {
-      #touch-controls {
-        display: none;
-      }
     }
 
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -318,9 +312,26 @@ class Level2 extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor('#ffd1dc');
-    this.add.text(100, 200, "Bravo ! Tu as fini le niveau 1 💖", {
+    this.add.text(100, 200, "Bravo ! Tu a fini mon coeur 💖", {
       fontSize: '20px',
       fill: '#000'
+    });
+
+    const lettre = `
+Ma chère Syrine 💌,
+
+À travers ce petit jeu, j’ai voulu recréer un monde où chaque cœur que tu trouves
+est un souvenir que nous avons partagés. Ce niveau est terminé, mais notre aventure
+ne fait que commencer. Merci d’être cette personne lumineuse dans ma vie.
+
+Avec tout mon amour,
+Yacine 💖 PS: C'est toi le perso quand t'etais petite
+    `;
+
+    this.add.text(80, 300, lettre, {
+      fontSize: '12px',
+      fill: '#000',
+      wordWrap: { width: 640 }
     });
   }
 }
@@ -365,6 +376,11 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+// Afficher les contrôles tactiles uniquement sur mobile
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  document.getElementById('touch-controls').style.display = 'flex';
+}
 </script>
 
 </body>

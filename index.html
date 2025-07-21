@@ -17,26 +17,50 @@
       margin: auto;
     }
 
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    /* Touch Controls */
     #touch-controls {
       position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
       display: none;
-      gap: 20px;
       z-index: 10;
+      pointer-events: none;
     }
 
-    #touch-controls button {
-      font-size: 24px;
-      padding: 15px;
-      background: rgba(255,255,255,0.7);
-      border: none;
-      border-radius: 10px;
+    .touch-zone {
+      position: absolute;
+      pointer-events: auto;
+    }
+
+    #left-zone {
+      bottom: 40px;
+      left: 30px;
+      display: flex;
+      gap: 20px;
+    }
+
+    #right-zone {
+      bottom: 40px;
+      right: 30px;
+    }
+
+    #left-btn, #right-btn, #up-btn {
+      width: 60px;
+      height: 60px;
+      font-size: 32px;
+      background: rgba(255, 255, 255, 0.3);
+      border: 2px solid white;
+      border-radius: 50%;
+      color: white;
       cursor: pointer;
+      touch-action: none;
     }
 
-    /* Bouton Start Mobile */
+    /* Mobile Start Button */
     #start-btn {
       position: absolute;
       top: 50%;
@@ -52,20 +76,22 @@
       display: none;
       font-family: 'Press Start 2P', monospace;
     }
-
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   </style>
 </head>
 <body>
 
-<!-- Touch buttons -->
+<!-- Touch controls -->
 <div id="touch-controls">
-  <button id="left-btn">⬅️</button>
-  <button id="up-btn">⬆️</button>
-  <button id="right-btn">➡️</button>
+  <div id="left-zone" class="touch-zone">
+    <button id="left-btn">⬅️</button>
+    <button id="right-btn">➡️</button>
+  </div>
+  <div id="right-zone" class="touch-zone">
+    <button id="up-btn">⬆️</button>
+  </div>
 </div>
 
-<!-- Start button for mobile -->
+<!-- Start button -->
 <button id="start-btn">START</button>
 
 <script>
@@ -91,7 +117,6 @@ class MainMenu extends Phaser.Scene {
       this.scene.start('Level1');
     });
 
-    // Gérer le bouton Start mobile ici
     const startBtn = document.getElementById('start-btn');
     startBtn.addEventListener('click', () => {
       this.scene.start('Level1');
@@ -110,13 +135,11 @@ class Level1 extends Phaser.Scene {
     this.load.image('life', 'https://cdn-icons-png.flaticon.com/512/833/833472.png');
     this.load.image('strawberry', 'https://cdn-icons-png.flaticon.com/512/590/590685.png');
     this.load.image('door', 'https://cdn-icons-png.flaticon.com/512/820/820535.png');
-
     this.load.image('img1', 'IMG_0139.jpeg');
     this.load.image('img2', 'IMG_5407.jpeg');
     this.load.image('img3', 'IMG_5447.jpeg');
     this.load.image('img4', 'IMG_5842.jpeg');
     this.load.image('img5', 'IMG_6228.png');
-
     this.load.spritesheet('dude', 'https://labs.phaser.io/assets/sprites/dude.png', {
       frameWidth: 32,
       frameHeight: 48
@@ -402,9 +425,8 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-// Afficher les contrôles tactiles uniquement sur mobile
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-  document.getElementById('touch-controls').style.display = 'flex';
+  document.getElementById('touch-controls').style.display = 'block';
   document.getElementById('start-btn').style.display = 'block';
 }
 </script>

@@ -22,7 +22,7 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      display: none; /* hidden by default, shown via JS on mobile */
+      display: none;
       gap: 20px;
       z-index: 10;
     }
@@ -36,6 +36,23 @@
       cursor: pointer;
     }
 
+    /* Bouton Start Mobile */
+    #start-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      padding: 15px 25px;
+      background: #ff5c5c;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      z-index: 20;
+      display: none;
+      font-family: 'Press Start 2P', monospace;
+    }
+
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   </style>
 </head>
@@ -47,6 +64,9 @@
   <button id="up-btn">⬆️</button>
   <button id="right-btn">➡️</button>
 </div>
+
+<!-- Start button for mobile -->
+<button id="start-btn">START</button>
 
 <script>
 class MainMenu extends Phaser.Scene {
@@ -69,6 +89,13 @@ class MainMenu extends Phaser.Scene {
 
     this.input.keyboard.once('keydown-ENTER', () => {
       this.scene.start('Level1');
+    });
+
+    // Gérer le bouton Start mobile ici
+    const startBtn = document.getElementById('start-btn');
+    startBtn.addEventListener('click', () => {
+      this.scene.start('Level1');
+      startBtn.style.display = 'none';
     });
   }
 }
@@ -207,12 +234,10 @@ class Level1 extends Phaser.Scene {
     this.deadZoneY = 600;
     this.canDoubleJump = false;
 
-    // Touch control flags
     this.leftPressed = false;
     this.rightPressed = false;
     this.upPressed = false;
 
-    // Touch button listeners
     document.getElementById('left-btn').addEventListener('touchstart', () => this.leftPressed = true);
     document.getElementById('left-btn').addEventListener('touchend', () => this.leftPressed = false);
     document.getElementById('right-btn').addEventListener('touchstart', () => this.rightPressed = true);
@@ -380,6 +405,7 @@ const game = new Phaser.Game(config);
 // Afficher les contrôles tactiles uniquement sur mobile
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
   document.getElementById('touch-controls').style.display = 'flex';
+  document.getElementById('start-btn').style.display = 'block';
 }
 </script>
 

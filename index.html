@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Love Quest - Menu</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      font-family: "Press Start 2P", monospace;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+    }
+
+    #touch-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 10;
+    }
+
+    #touch-controls button {
+      font-size: 24px;
+      padding: 15px;
+      background: rgba(255,255,255,0.7);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    @media (min-width: 801px) {
+      #touch-controls {
+        display: none;
+      }
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  </style>
+</head>
+<body>
+
+<!-- Touch buttons -->
+<div id="touch-controls">
+  <button id="left-btn">⬅️</button>
+  <button id="up-btn">⬆️</button>
+  <button id="right-btn">➡️</button>
+</div>
+
+<script>
+class MainMenu extends Phaser.Scene {
+  constructor() {
+    super('MainMenu');
+  }
+
+  create() {
+    this.cameras.main.setBackgroundColor('#000');
+    this.add.text(120, 200, 'LOVE QUEST', {
+      fontFamily: 'Press Start 2P',
+      fontSize: '20px',
+      fill: '#f55'
+    });
+    this.add.text(130, 280, 'Press ENTER to start', {
+      fontFamily: 'Press Start 2P',
+      fontSize: '12px',
+      fill: '#fff'
+    });
+
+    this.input.keyboard.once('keydown-ENTER', () => {
+      this.scene.start('Level1');
+    });
+  }
+}
+
+class Level1 extends Phaser.Scene {
+  constructor() {
+    super('Level1');
+  }
+
+  preload() {
+    this.load.image('heart', 'https://cdn-icons-png.flaticon.com/512/833/833472.png');
+    this.load.image('life', 'https://cdn-icons-png.flaticon.com/512/833/833472.png');
+    this.load.image('strawberry', 'https://cdn-icons-png.flaticon.com/512/590/590685.png');
+    this.load.image('door', 'https://cdn-icons-png.flaticon.com/512/820/820535.png');
+
+    this.load.image('img1', 'IMG_0139.jpeg');
+    this.load.image('img2', 'IMG_5407.jpeg');
+    this.load.image('img3', 'IMG_5447.jpeg');
+    this.load.image('img4', 'IMG_5842.jpeg');
+    this.load.image('img5', 'IMG_6228.png');
+
+    this.load.spritesheet('dude', 'https://labs.phaser.io/assets/sprites/dude.png', {
+      frameWidth: 32,
+      frameHeight: 48
+    });
+  }
+
+  create() {
+    this.imageList = ['img1', 'img2', 'img3', 'img4', 'img5'];
+    this.currentImageIndex = 0;
+
+    this.popup = this.add.image(400, 300, 'img1')
+      .setVisible(false)
+      .setScrollFactor(0)
+      .setDepth(100)
+      .setScale(0.3);
+
+    this.add.text(500, 580, "Made by Yacine for Syrine", {
+      fontFamily: 'Press Start 2P',
+      fontSize: '10px',
+      fill: '#fff'
+    }).setScrollFactor(0);
+
+    this.cameras.main.setBounds(0, 0, 3600, 600);
+    this.physics.world.setBounds(0, 0, 3600, 600);
+    this.cameras.main.setBackgroundColor('#a3d977');
+
+    this.platforms = this.physics.add.staticGroup();
+    const createBlock = (x, y) => {
+      let block = this.add.rectangle(x, y, 64, 32, 0x228B22);
+      this.physics.add.existing(block, true);
+      this.platforms.add(block);
+    };
+
+    for (let i = 0; i < 10; i++) createBlock(32 + i * 70, 568);
+    createBlock(800, 480); createBlock(870, 480); createBlock(940, 480);
+    createBlock(1100, 400); createBlock(1170, 400);
+    createBlock(1350, 520); createBlock(1420, 520); createBlock(1490, 520);
+    createBlock(1700, 380); createBlock(1770, 380); createBlock(1840, 380);
+    createBlock(2050, 500); createBlock(2120, 500);
+    createBlock(2350, 350); createBlock(2420, 350); createBlock(2490, 350);
+
+    this.door = this.physics.add.staticSprite(2520, 310, 'door').setScale(0.1).setAlpha(0.9);
+    this.add.tween({ targets: this.door, alpha: 1, duration: 1000, yoyo: true, repeat: -1 });
+
+    this.player = this.physics.add.sprite(100, 450, 'dude');
+    this.player.setBounce(0.1).setCollideWorldBounds(true);
+    this.spawnPoint = { x: 100, y: 450 };
+
+    this.anims.create({
+      key: 'left',
+      frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1
+    });
+    this.anims.create({ key: 'turn', frames: [{ key: 'dude', frame: 4 }], frameRate: 20 });
+    this.anims.create({
+      key: 'right',
+      frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cameras.main.startFollow(this.player);
+
+    this.hearts = this.physics.add.group();
+    const heartsPos = [
+      { x: 850, y: 440 },
+      { x: 1120, y: 360 },
+      { x: 1400, y: 480 },
+      { x: 1750, y: 340 },
+      { x: 2450, y: 310 }
+    ];
+    heartsPos.forEach(pos => {
+      let heart = this.hearts.create(pos.x, pos.y, 'heart');
+      heart.setScale(0.07).body.setAllowGravity(false);
+    });
+
+    this.enemies = this.physics.add.group();
+    const enemiesPos = [
+      { x: 830, y: 420 },
+      { x: 1130, y: 320 },
+      { x: 1430, y: 480 },
+      { x: 1760, y: 300 }
+    ];
+    enemiesPos.forEach(pos => {
+      let enemy = this.enemies.create(pos.x, pos.y, 'strawberry').setScale(0.07);
+      enemy.body.setGravityY(600);
+      enemy.setCollideWorldBounds(true);
+      enemy.setData('startX', pos.x);
+      enemy.setData('range', 80);
+      enemy.setData('direction', 1);
+    });
+
+    this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.enemies, this.platforms);
+    this.physics.add.collider(this.hearts, this.platforms);
+    this.physics.add.overlap(this.player, this.hearts, this.collectHeart, null, this);
+    this.physics.add.overlap(this.player, this.enemies, this.hitEnemy, null, this);
+    this.physics.add.overlap(this.player, this.door, this.tryDoor, null, this);
+
+    this.score = 0;
+    this.scoreText = this.add.text(16, 16, 'Souvenirs ❤️ : 0 / 5', {
+      fontSize: '16px',
+      fill: '#000'
+    }).setScrollFactor(0);
+
+    this.lives = 3;
+    this.lifeIcons = [];
+    for (let i = 0; i < this.lives; i++) {
+      let icon = this.add.image(700 + i * 30, 20, 'life').setScale(0.03).setScrollFactor(0);
+      this.lifeIcons.push(icon);
+    }
+
+    this.deadZoneY = 600;
+    this.canDoubleJump = false;
+
+    // Touch control flags
+    this.leftPressed = false;
+    this.rightPressed = false;
+    this.upPressed = false;
+
+    // Touch button listeners
+    document.getElementById('left-btn').addEventListener('touchstart', () => this.leftPressed = true);
+    document.getElementById('left-btn').addEventListener('touchend', () => this.leftPressed = false);
+    document.getElementById('right-btn').addEventListener('touchstart', () => this.rightPressed = true);
+    document.getElementById('right-btn').addEventListener('touchend', () => this.rightPressed = false);
+    document.getElementById('up-btn').addEventListener('touchstart', () => this.upPressed = true);
+    document.getElementById('up-btn').addEventListener('touchend', () => this.upPressed = false);
+  }
+
+  update() {
+    const onGround = this.player.body.blocked.down || this.player.body.touching.down;
+    const left = this.cursors.left.isDown || this.leftPressed;
+    const right = this.cursors.right.isDown || this.rightPressed;
+    const jump = Phaser.Input.Keyboard.JustDown(this.cursors.up) || this.upPressed;
+
+    if (left) {
+      this.player.setVelocityX(-160);
+      this.player.anims.play('left', true);
+    } else if (right) {
+      this.player.setVelocityX(160);
+      this.player.anims.play('right', true);
+    } else {
+      this.player.setVelocityX(0);
+      this.player.anims.play('turn');
+    }
+
+    if (jump) {
+      if (onGround) {
+        this.player.setVelocityY(-400);
+        this.canDoubleJump = true;
+      } else if (this.canDoubleJump) {
+        this.player.setVelocityY(-350);
+        this.canDoubleJump = false;
+      }
+
+      this.upPressed = false;
+    }
+
+    if (this.player.y > this.deadZoneY) this.loseLife();
+
+    this.enemies.children.iterate(enemy => {
+      let startX = enemy.getData('startX');
+      let range = enemy.getData('range');
+      let direction = enemy.getData('direction');
+      enemy.x += direction * 1.5;
+      if (enemy.x > startX + range) enemy.setData('direction', -1);
+      else if (enemy.x < startX) enemy.setData('direction', 1);
+    });
+  }
+
+  collectHeart(player, heart) {
+    heart.disableBody(true, true);
+    this.score++;
+    this.scoreText.setText(`Souvenirs ❤️ : ${this.score} / 5`);
+
+    const key = this.imageList[this.currentImageIndex % this.imageList.length];
+    this.popup.setTexture(key).setVisible(true);
+    this.currentImageIndex++;
+
+    this.physics.world.pause();
+    this.input.keyboard.enabled = false;
+
+    this.time.delayedCall(2000, () => {
+      this.popup.setVisible(false);
+      this.physics.world.resume();
+      this.input.keyboard.enabled = true;
+    });
+  }
+
+  hitEnemy(player, enemy) {
+    if (player.body.velocity.y > 0 && player.y < enemy.y) {
+      enemy.disableBody(true, true);
+      player.setVelocityY(-250);
+    } else {
+      this.loseLife();
+    }
+  }
+
+  loseLife() {
+    this.lives--;
+    if (this.lives >= 0) this.lifeIcons[this.lives].setVisible(false);
+    if (this.lives <= 0) this.scene.start('GameOver');
+    else {
+      this.player.setPosition(this.spawnPoint.x, this.spawnPoint.y);
+      this.player.setVelocity(0, 0);
+    }
+  }
+
+  tryDoor(player, door) {
+    if (this.score >= 5) this.scene.start('Level2');
+  }
+}
+
+class Level2 extends Phaser.Scene {
+  constructor() {
+    super('Level2');
+  }
+
+  create() {
+    this.cameras.main.setBackgroundColor('#ffd1dc');
+    this.add.text(100, 200, "Bravo ! Tu as fini le niveau 1 💖", {
+      fontSize: '20px',
+      fill: '#000'
+    });
+  }
+}
+
+class GameOver extends Phaser.Scene {
+  constructor() {
+    super('GameOver');
+  }
+
+  create() {
+    this.cameras.main.setBackgroundColor('#000');
+    this.add.text(200, 200, "💔 GAME OVER 💔", {
+      fontSize: '40px',
+      fill: '#ff5c5c',
+      fontFamily: 'Press Start 2P'
+    });
+    this.add.text(180, 300, "Appuie sur Espace pour recommencer", {
+      fontSize: '14px',
+      fill: '#fff',
+      fontFamily: 'Press Start 2P'
+    });
+
+    this.input.keyboard.once('keydown-SPACE', () => {
+      this.scene.start('MainMenu');
+    });
+  }
+}
+
+const config = {
+  type: Phaser.AUTO,
+  width: 800,
+  height: 600,
+  physics: {
+    default: 'arcade',
+    arcade: { gravity: { y: 600 }, debug: false }
+  },
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  scene: [MainMenu, Level1, Level2, GameOver]
+};
+
+const game = new Phaser.Game(config);
+</script>
+
+</body>
+</html>
